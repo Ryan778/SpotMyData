@@ -1,0 +1,133 @@
+#div-postauth {
+  display: none;
+}
+
+#pl-main {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#pl-statsbar {
+  text-align: left;
+}
+
+.pl-outer {
+  width: 200px;
+  height: 225px;
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+  margin: 0 6px 14px;
+}
+
+#pl-outer-wrapper {
+  margin: auto;
+}
+
+.pl-image {
+  width: 200px;
+  height: 200px;
+  background-position: center;
+  background-size: cover;
+}
+
+.pl-name {
+  position: absolute;
+  top: 200px;
+  padding-left: 2px;
+  padding-bottom: 2px;
+  width: 100%;
+  /* background: #0000003f; */
+  color: #fff;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pl-overlay {
+  position: absolute;
+  top: 0;
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: none;
+  transition: background 0.14s;
+}
+
+.pl-overlay:hover {
+  background: var(--hover-color);
+  cursor: pointer;
+}
+
+/* Playlist details */
+
+#pl-details-header {
+  min-height: 240px;
+}
+
+#pl-details-bk {
+  float: left;
+  width: 240px;
+  height: 240px;
+  background-position: center;
+  background-size: cover;
+  margin-right: 16px;
+}
+
+.pl-badge {
+  border: 1px solid #fff;
+  padding: 0 2px 1px;
+}
+
+/* Playlist tracks */
+
+#pl-details-tracks {
+  margin-top: 14px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#pl-details-tracks * * *:nth-child(1), #pl-details-tracks * * *:nth-child(2), #pl-details-tracks * * *:nth-last-child(1) {
+  width: 34px;
+  text-align: center;
+}
+
+.pl-play-disabled {
+  color: #888;
+}
+
+.pl-play:not(:disabled) {
+  cursor: pointer;
+}
+
+.pl-play:not(.pl-play-active) span:nth-child(2) {
+  display: none;
+}
+
+.pl-play.pl-play-active span:nth-child(1) {
+  display: none;
+}
+
+#pl-details-tracks thead tr th {
+  background: var(--accent-color);
+  border-bottom: 1px solid #fff;
+}
+
+#pl-details-tracks tbody tr td {
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+#pl-details-tracks tbody tr {
+  transition: all 0.14s;
+}
+
+#pl-details-tracks tbody tr:hover {
+  background: var(--hover-color);
+}
+
+#pl-details thead {
+  text-align: left;
+}

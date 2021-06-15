@@ -1,0 +1,11 @@
+#main {
+  text-align: center;
+}
+
+.error {
+  color: var(--error-color)
+}
+
+#error-det {
+  display: none;
+}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SpotMyData</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1.0, maximum-scale=1.0'>
+    <link rel='stylesheet' href='css/base.css'/>
+    <link rel='stylesheet' href='css/playlists.css'/>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js' integrity='sha512-BrvVYNhKh6yST24E5DY/LopLO5d+8KYmIXyrpBIJ2PK+CyyJw/cLSG/BfJomWLC1IblNrmiJWGlrGueKLd/Ekw==' crossorigin='anonymous' referrerpolicy='no-referrer'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/3.1.1/vue.global.min.js' integrity='sha512-39AM5Z+wwEyvNEoZwaxdJBr4ZxA0KA+JRaHQLVOttMKnfvY1kVawOqUmOaIgAn0e58UUVwZxxU9MwJ5xiacvfQ==' crossorigin='anonymous' referrerpolicy='no-referrer'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js' integrity='sha512-RXf+QSDCUQs5uwRKaDoXt55jygZZm2V++WUZduaU/Ui/9EGp3f/2KZVahFZBKGH0s774sd3HmrhUy+SgOFQLVQ==' crossorigin='anonymous' referrerpolicy='no-referrer'></script>
+    <script src='js/main.js'></script>
+  </head>
+  <body>
+    <div id='main'>
+      <h1 id='title'><span id='title-icon'><i class='fas fa-fw fa-home'></i></span> <b>Spot</b>My<b>Data</b></h1>
+      <div id='div-preauth'>
+        <p>Welcome!</p>
+        <p>To continue, we'll need you to sign in with a Spotify account.</p>
+        <button onclick='obtainToken()'>Login with Spotify</button> <a onclick='obtainToken(1)'>Switch Account</a>
+      </div>
+      <div id='div-postauth'>
+        <p id='p-name'></p>
+        <div id='div-interface'>
+          <!-- <div class='pl-outer'>
+            <div class='pl-image' style='background-image: url(http://via.placeholder.com/300x300)'></div>
+            <div class='pl-name'>Hello World I like cheese and stuf</div>
+            <div class='pl-overlay'></div>
+          </div> -->
+          <div id='pl-main' v-if='page===1'>
+            <div id='pl-statsbar'>
+              <p><b>{{stats.shownPlaylists}} playlists ({{stats.shownTracks}} tracks) shown</b><br/><i>{{stats.totalPlaylists - stats.shownPlaylists}} hidden playlists ({{stats.totalTracks - stats.shownTracks}} hidden tracks)</i></p>
+            </div>
+            <div id='pl-outer-wrapper'>
+              <div class='pl-outer' v-for='(list, index) of shownPlaylists'>
+                <div class='pl-image' :style='{["background-image"]: getImageURL(list)}'></div>
+                <div class='pl-name'>{{list.name}}</div>
+                <div class='pl-overlay' v-on:click='selectPlaylist(index)'></div>
+              </div>
+            </div>
+          </div>
+
+          <div id='pl-details' v-if='page===2'>
+            <div id='pl-details-header'>
+              <div id='pl-details-bk' :style='{["background-image"]: getImageURL(selectedPlaylist)}'></div>
+              <h1>{{selectedPlaylist.name}}</h1>
+              <p><b><a :href='selectedPlaylist.owner && selectedPlaylist.owner.external_urls ? selectedPlaylist.owner.external_urls.spotify : "#"' target='_blank'>{{selectedPlaylist.owner.display_name}}</a></b></p>
+            <p><i>{{decodeHTML(selectedPlaylist.description)}}</i></p>
+              <p><span class='pl-badge' v-if='selectedPlaylist.collaborative'>Collaborative</span> <span class='pl-badge' v-if='selectedPlaylist.publice'>Public</span><span class='pl-badge' v-else>Private</span> <span>{{selectedPlaylist.tracks.total}} tracks</span></p>
+            </div>
+            <table id='pl-details-tracks' v-if='selectedPlaylist.tracks.$trackData'>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th><i class='fas fa-play'></i></th>
+                  <th>Title</th>
+                  <th>Artist</th>
+                  <th>Album</th>
+                  <th><i class='fas fa-clock'></i></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for='(item, index) in selectedPlaylist.tracks.$trackData'>
+                  <td>{{index + 1}}</td>
+                  <td><span v-on:click='previewTrack(item.track.preview_url)' class='pl-play' :class='{["pl-play-disabled"]: !item.track.preview_url, ["pl-play-active"]: item.track.preview_url===currentPreviewURL}'><span><i class='fas fa-fw fa-play'></i></span><span><i class='fas fa-fw fa-stop'></i></span></span></td>
+                  <td><a :href='item.$external_url' target='_blank'>{{item.track.name}}</a></td>
+                  <td>{{decodeArtists(item.track.artists)}}</td>
+                  <td>{{item.track.$album_name}}</td>
+                  <td>{{formatDuration(item.track.duration_ms)}}</td>
+                </tr>
+              </tbody>
+            </table>
+            <a v-on:click='page=1'>Return</a>
+            <!-- <p>Potato</p> -->
+            <!-- <pre style='white-space: normal'>{{JSON.stringify(selectedPlaylist)}}</pre> -->
+          </div>
+          <p>Page {{page}}</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

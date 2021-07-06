@@ -12,7 +12,7 @@
   </head>
   <body>
     <div id='main'>
-      <h1 id='title'><span id='title-icon'><i class='fas fa-fw fa-home'></i></span> <b>Spot</b>My<b>Data</b></h1>
+      <h1 id='title'><span id='title-icon'><span v-show='page===1'><i class='fas fa-fw fa-home'></i></span><span style='display:none' v-show='page!==1' v-on:click='page=1'><i class='fas pointer fa-fw fa-arrow-left'></i></span></span> <b>Spot</b>My<b>Data</b></h1>
       <div id='div-preauth'>
         <p>Welcome!</p>
         <p>To continue, we'll need you to sign in with a Spotify account.</p>
@@ -29,6 +29,8 @@
           <div id='pl-main' v-if='page===1'>
             <div id='pl-statsbar'>
               <p><b>{{stats.shownPlaylists}} playlists ({{stats.shownTracks}} tracks) shown</b><br/><i>{{stats.totalPlaylists - stats.shownPlaylists}} hidden playlists ({{stats.totalTracks - stats.shownTracks}} hidden tracks)</i></p>
+              <p><span class='selected'>My Playlists</span> <span>Playlists I Follow</span> <span>Imported Playlists</span></p>
+              <button>Export</button> <button>Import</button>
             </div>
             <div id='pl-outer-wrapper'>
               <div class='pl-outer' v-for='(list, index) of shownPlaylists'>
@@ -69,12 +71,23 @@
                 </tr>
               </tbody>
             </table>
+            <p v-else>
+              <i class='fas fa-circle-notch fa-spin'></i> Loading tracks...<br/><i>This may take a few seconds if you have a lot of tracks (>1,000) in here.</i>
+            </p>
             <a v-on:click='page=1'>Return</a>
-            <!-- <p>Potato</p> -->
-            <!-- <pre style='white-space: normal'>{{JSON.stringify(selectedPlaylist)}}</pre> -->
           </div>
+          <hr/>
+          <p>&copy; 2021 Ryan Zhang<br/>SpotMyData is a third party tool which uses Spotify's Developer APIs to function. SpotMyData is not owned by, sponsored by, nor endorsed by Spotify.</p>
           <p>Page {{page}}</p>
         </div>
+        <transition name='fly'>
+          <div id='div-pb-outer' v-if='pb.active'>
+            <div id='div-pb-bar-wrapper'>
+              <div id='div-pb-bar' :style='{width: 100*pb.progress/pb.total+"%"}'></div>
+            </div>
+            <p id='pb-name'><span v-show='pb.progress!==pb.total'><i class='fas fa-fw fa-circle-notch fa-spin'></i></span><span v-show='pb.progress===pb.total'><i class='fas fa-fw fa-check'></i></span> {{pb.name}} <span id='pb-progress'>{{pb.progress}}/{{pb.total}} ({{(Math.round(1000*pb.progress/pb.total)/10).toFixed(1)}}%)</span></p>
+          </div>
+        </transition>
       </div>
     </div>
   </body>

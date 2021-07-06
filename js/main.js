@@ -1,13 +1,16 @@
-let authWindow, authToken = 'BQA_ZP1vMaCNlcwo4Vng5jwNGzZwBit9hUL3xjzFxuEa7xgGSlWUG5ofhd6dw6Lltvj4cmg-l_8RXQRJCrpWVkWQbaHKVHVwD1m5J8FQ9o_9iPh5ZOnLMMr8Z11Dt3X9VCzcFMsjaRGoJff0ZFTIKJ8YucEjt8ikdGzGYp1ElXwnxZyi1XoXWfVQ9nakKFqYI62U8S_5vVjBCIF6iNc'; 
+let authWindow, authToken; 
 let audioController = new Audio(); 
+audioController.volume = 0.49; 
 let Interface; 
 
 let filter = {
-  showOthers: false
+  showOthers: true
 }
 
 let config = {
-  isUSMarket: true
+  isUSMarket: true, 
+  requestDelay: 500, 
+  toastTimeout: 2000
 }
 
 function obtainToken(t) {
@@ -41,15 +44,27 @@ async function fetchEndpoint(uri) {
   });
 }
 
-async function fetchAllItems(endpoint, limit=50, items=[], offset=0) {
+async function wait(ms) {
+  setTimeout(() => {
+    return; 
+  }, ms); 
+}
+
+async function fetchAllItems(endpoint, limit=50, callback, items=[], offset=0) {
   let data = await fetchEndpoint(`${endpoint}?offset=${offset}&limit=${limit}${config.isUSMarket?'&market=US':''}`); 
   if (data.error) {
     handleError(data.error); 
     return null; 
   }
   items.push(...data.items); 
+  if (callback) {
+    callback(items.length); 
+  }
   if (data.next) {
-    return fetchAllItems(endpoint, limit, items, offset + limit); 
+    if (config.requestDelay) {
+      await wait(config.requestDelay); 
+    }
+    return fetchAllItems(endpoint, limit, callback, items, offset + limit); 
   }
   return items; 
 }
@@ -69,7 +84,25 @@ async function fetchInitialUserInfo() {
       list.isOther = true; // does not belong to current user
     } 
     return list; 
-  })
+  }); 
+
+  let library = await fetchEndpoint('https://api.spotify.com/v1/me/tracks?offset=0&limit=1'); 
+
+  playlists.unshift({
+    // https://misc.scdn.co/liked-songs/liked-songs-300.png
+    $sp_library: 1, 
+    collaborative: false, 
+    description: `Your library of saved tracks and albums.`, 
+    images: [{
+      url: 'https://misc.scdn.co/liked-songs/liked-songs-300.png'
+    }], 
+    tracks: {
+      href: 'https://api.spotify.com/v1/me/tracks', 
+      total: library.total
+    }, 
+    name: 'Liked Songs', 
+    owner: profile
+  }); 
 
   Interface = Vue.createApp(InterfaceTemplate).mount('#main'); 
   Interface.updatePlaylists(playlists); 
@@ -93,7 +126,7 @@ function formatPlaylistTracks(tracks) {
         duration_ms: track.track.duration_ms
       }
     }
-  })
+  }); 
 }
 
 /**
@@ -102,8 +135,22 @@ function formatPlaylistTracks(tracks) {
  */
 async function fetchPlaylistTracks(index) {
   let playlist = Interface.playlists[index]; 
-  let tracks = await fetchAllItems(playlist.tracks.href, 100); 
+  let showIndicator = playlist.tracks.total > 100; 
+  if (showIndicator) {
+    Interface.pb.active = true; 
+    Interface.pb.name = 'Loading tracks'; 
+    Interface.pb.progress = 0; 
+    Interface.pb.total = playlist.tracks.total; 
+  }
+  let tracks = await fetchAllItems(playlist.tracks.href, 50, (progress) => {
+    if (showIndicator) {
+      Interface.pb.progress = progress; 
+    }
+  }); 
   playlist.tracks.$trackData = formatPlaylistTracks(tracks); 
+  setTimeout(() => {
+    Interface.pb.active = false; 
+  }, config.toastTimeout); 
   // return tracks; 
   return; 
 }
@@ -115,7 +162,15 @@ const InterfaceTemplate = {
       selectMode: false,  
       playlists: [{name: 'Hello World'}], 
       selectedPlaylist: {}, 
-      currentPreviewURL: ''
+      currentPreviewURL: '', 
+      pb: {
+        active: false, 
+        name: '', 
+        progress: 0, 
+        total: 0
+      }, 
+      filter, 
+      config
     }
   }, 
   methods: {
@@ -138,13 +193,17 @@ const InterfaceTemplate = {
       }
       return 'https://via.placeholder.com/300x300';
     }, 
-    selectPlaylist(index) {
+    async selectPlaylist(index) {
       if (!this.selectMode) {
         this.selectedPlaylist = this.shownPlaylists[index]; 
-        if (!this.selectedPlaylist.tracks.$trackData) {
-          fetchPlaylistTracks(this.selectedPlaylist.$index); 
-        }
         this.page = 2; 
+        if (!this.selectedPlaylist.tracks.$trackData) {
+          // this.pb.active = true; 
+          await fetchPlaylistTracks(this.selectedPlaylist.$index); 
+          if (this.selectPlaylist.$sp_library) {
+            this.selectPlaylist.tracks.total = this.selectedPlaylist.tracks.$trackData.length; 
+          }
+        }
       }
     }, 
     decodeHTML(input) {
@@ -197,6 +256,7 @@ const InterfaceTemplate = {
       if (!this.playlists) {
         return []; 
       }
+      let filter = this.filter; 
       return this.playlists.filter(function(list) {
         if (!filter.showOthers && list.isOther) {
           return false; 
@@ -214,5 +274,3 @@ const InterfaceTemplate = {
     }
   }
 }; 
-
-// BQD9evMBSrv4pKS38rmOiUb-NH84mecQj1XzVLDmsU6hekGTUn3hjiJPHT_0W2JdAYu2jQdkuREzcIyKwt7fPyhH5gwkzdyBWm_X3IV2LdofzXh2JY3nNA8WX_SImiTx5v0RpKu14NYWxHlkz-z1HE7qM5QUCL1mD8TMDrrXn0eItExtk8T7i0tNu_ATUkIeFlSyGjqcjgmF-qPI-08

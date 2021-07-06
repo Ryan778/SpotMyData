@@ -1,7 +1,10 @@
 :root {
   --hover-color: #ffffff1f; 
-  --accent-color: #205030; 
+  --accent-color: #205030;
+  --accent-gradient: linear-gradient(120deg, #2a6828, #205030);  
+  --accent-light: #b0ebae; 
   --error-color: #ff9e77; 
+  --link-color: #7dc0ff;
 }
 
 html {
@@ -26,7 +29,7 @@ html {
 }
 
 a {
-  color: #7dc0ff;
+  color: var(--link-color);
   text-decoration: none;
 }
 
@@ -61,4 +64,13 @@ button:not([disabled]):hover, input:not([disabled]):focus{
 button:not([disabled]):active{
   /* color: #fff; */
   background: #2a3875af; 
+}
+
+.pointer {
+  transition: color 0.14s;
+}
+
+.pointer:hover {
+  color: var(--link-color);
+  cursor: pointer;
 }
